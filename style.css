@@ -81,3 +81,40 @@ body{
     text-decoration: line-through;
     opacity: 0.4;
 }
+
+
+
+/* === 进度条样式 === */
+.progress-container {
+    width: 80%;
+    margin: 20px auto; /* 让它和下面的输入框对齐 */
+    background-color: #e0e0e0;
+    border-radius: 20px;
+    position: relative; /* 这是为了让百分比文本能相对于它定位 */
+    height: 30px;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.2); /* 加一点内阴影，更有质感 */
+}
+
+.progress-bar {
+    width: 0%; /* 初始宽度为0 */
+    height: 100%;
+    background: linear-gradient(
+        to right,
+        rgb(188, 113, 188),
+        rgb(96, 96, 213)
+    );
+    border-radius: 20px;
+    /* 关键！这就是丝滑的秘诀！ */
+    /* 当width属性变化时，用0.5秒的时间平滑过渡 */
+    transition: width 0.5s ease-in-out; 
+}
+
+.progress-text {
+    position: absolute; /* 让文本脱离文档流，浮在进度条上 */
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%); /* 水平垂直居中 */
+    color: white;
+    font-weight: bold;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5); /* 给文字加点阴影，更清晰 */
+}
