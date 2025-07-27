@@ -1,0 +1,83 @@
+body{
+     background: linear-gradient(to right, rgb(188, 113, 188), rgb(96, 96, 213));
+}
+
+.todo-app{
+    width: 98%;
+    height: 500px;
+    padding-top: 30px;
+    box-sizing: border-box;/*加padding不改变外部白色盒子的长度做法*/
+    background-color: aliceblue;
+    border-radius: 10px;
+    margin-top: 40px;
+    margin-left: 1%;
+}
+
+.title{
+    font-size: 30px;
+    font-weight: 700;
+    text-align: center;
+}
+
+.todo-from{
+    display: flex;/*把2个东西横着排*/
+    margin-left: 12.5%;
+    margin-top: 20px;
+}
+
+.todo-input{
+    margin-bottom: 20px;
+    border: 1px solid #dfe1e5;
+    outline: none;
+    width: 60%;
+    height: 50px;
+    border-radius: 20px 0 0 20px;
+    padding-left: 15px;
+}
+
+.button
+{
+    width: 100px;
+    height: 52px;
+    border-radius: 0 20px 20px 0;
+
+    text-align: center;
+
+    color: #ffff;
+    cursor: pointer;
+    line-height: 52px;
+    user-select: none;
+
+    background: linear-gradient(
+        to right,
+        rgb(188, 113, 188),
+        rgb(96, 96, 213)
+    )
+}
+
+.item
+{
+    display: flex;
+
+    align-items: center;
+    justify-content: space-between;
+
+    box-sizing: border-box;
+    width: 80%;
+    height: 50px;
+    margin: 8px auto;
+    padding: 16px;
+    border-radius: 20px;
+    box-shadow: rgba(149, 157 ,165 ,0.2) 0px 8px 20px;
+}
+
+.del
+{
+    color: rgb(223, 96, 96);
+}
+
+.completed
+{
+    text-decoration: line-through;
+    opacity: 0.4;
+}
