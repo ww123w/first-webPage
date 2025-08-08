@@ -1,87 +1,147 @@
 const todoInput = document.querySelector('.todo-input');
 const addButton = document.querySelector('.button');
-const todoList = document.querySelector('.todo-list');
+const todoListContainer = document.querySelector('.todo-list');
 
-// 新增！找到进度条和百分比文本的“遥控器”
-const progressBar = document.querySelector('.progress-bar');
-const progressText = document.querySelector('.progress-text');
+// // 新增！找到进度条和百分比文本的“遥控器”
+// const progressBar = document.querySelector('.progress-bar');
+// const progressText = document.querySelector('.progress-text');
 
+const API_BASE_URL = 'http://localhost:3000';
 
-function updateProgress() {
-    // 1. 获取所有待办事项的数量
-    const totalTodos = document.querySelectorAll('.item').length;
-    // 2. 获取所有已完成事项的数量 (class包含 'completed' 的)
-    const completedTodos = document.querySelectorAll('.item.completed').length;
-    
-    // 3. 计算完成百分比
-    //    为了避免除以0的错误，先判断总数是否大于0
-    const progressPercentage = totalTodos > 0 ? (completedTodos / totalTodos) * 100 : 0;
+// --- 核心渲染函数 ---
+/**
+ * 根据传入的 todos 数组，重新渲染整个待办事项列表
+ * @param {Array} todos - 包含待办事项对象的数组
+ */
+const renderTodos = (todos) => {
+    todoListContainer.innerHTML = '';//先清空当前的列表容器，防止重复添加
 
-    // 4. 更新进度条的宽度
-    //    使用toFixed(0)来四舍五入到整数
-    progressBar.style.width = `${progressPercentage.toFixed(0)}%`;
+    todos.forEach(todo => {
+        const itemClass = todo.completed ? 'item completed' : 'item';//用一个三元运算符来决定是否添加 'completed' class
+        const checkedAttribute = todo.completed ? 'checked' : '';//用一个三元运算符来决定 checkbox 是否被勾选
 
-    // 5. 更新百分比文本内容
-    progressText.textContent = `${progressPercentage.toFixed(0)}%`;
-}
+        const todoItemHTML =
+            `
+            <div class="${itemClass}" data-id="${todo.id}">
+                <div>
+                    <input type="checkbox" ${checkedAttribute}>
+                    <span class="name">${todo.text}</span>
+                </div>
+                <div class="del">del</div>
+            </div>
+        `;
 
-// 页面加载时，立即执行一次，以计算初始状态
-document.addEventListener('DOMContentLoaded', updateProgress);
+        todoListContainer.insertAdjacentHTML('beforeend', todoItemHTML);//把新创建的 HTML 字符串追加到容器里
+    });
+};
 
-addButton.addEventListener('click', function ()
-    {
-        addTodo();
+//async 函数让我们能用 await “暂停”代码，等待 fetch 的结果
+const fetchAndRenderTodos = async () => {
+    try {
+        const response = await fetch(`${API_BASE_URL}/todos`);
+
+        if (!response.ok) {
+            throw new Error(`网络响应错误: ${response.statusText}`);
+        }
+
+        const todos = await response.json();//将响应体解析为 JSON
+
+        renderTodos(todos);
+    } catch (error) {
+        console.error('获取待办事项失败:', error);
+        todoListContainer.innerHTML = '<p>加载列表失败，请稍后再试。</p>';
     }
-);//'click'：第一个参数是事件的类型。这是一个字符串，告诉耳朵要听什么声音。这里是 'click'（点击事件）。其他还有 'mouseover' (鼠标悬停), 'keydown' (键盘按下) 等。
+};
 
-// 增加一个：按回车键也能添加
-todoInput.addEventListener('keydown', function (event) {
+//页面加载时，自动执行一次获取和渲染
+//DOMContentLoaded 事件：这个事件会在整个 HTML 文档被完全加载和解析完成后触发，是执行初始化 JavaScript 代码最安全、最推荐的时机。
+document.addEventListener('DOMContentLoaded', fetchAndRenderTodos);
+
+//添加新的待办 
+const addTodo = async () => {
+    const text = todoInput.value.trim();
+    if (text === '') {
+        alert('请输入任务内容！');
+        return;
+    }
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/todos`, {
+            method: 'POST',
+            headers: {
+                'Content-type': 'application/json',
+            },
+            body: JSON.stringify({ text: text }),
+        });
+
+        if (!response.ok) {
+            throw new Error('添加任务失败');
+        }
+
+        // 添加成功后，清空输入框
+        todoInput.value = '';
+        // 然后重新获取整个列表并渲染，这是最简单的更新UI的方式
+        fetchAndRenderTodos();
+    } catch (error) {
+        console.error('添加任务时出错:', error);
+        alert('添加失败，请检查网络或联系管理员。');
+    }
+};
+
+addButton.addEventListener('click', addTodo);
+todoInput.addEventListener('keydown', (event) => {
     if (event.key === 'Enter') {
         addTodo();
     }
 });
 
-function addTodo()
-{
-    const todoText = todoInput.value.trim();//创建一个叫 todoText 的常量，把输入框里的文字拿出来，清理掉两头的空格，然后存进去
+//===================================================================
 
-    if (todoText === '') {
-        alert("你必须输入内容!");//浏览器内置的函数，会弹出一个简单的警告框，显示括号里的文字。
-        return;
-    }
- 
-    const newTodoHTML = `
-        <div class="item">
-            <div>
-                <input type="checkbox">
-                <span class="name">${todoText}</span>
-            </div>
-            <div class="del">del</div>
-        </div>
-    `;//反引号开启了一个叫做“模板字符串”的功能。
+//删除和更新待办事项
+todoListContainer.addEventListener('click', async (event) => {
+    const target = event.target;//用户实际点击的那个元素
 
-    todoList.insertAdjacentHTML('beforeend', newTodoHTML);//把一段 HTML 字符串插入到指定的位置。
-    //'beforeend' 的意思是“在元素的内部，但在所有现有子元素的后面”。就像是在购物清单的末尾再加一项
+    if (target.classList.contains('del')) {
+        const item = target.closest('.item');
 
-    todoInput.value = '';
+        const todoId = item.dataset.id;
 
-    updateProgress(); // 添加新任务后，更新进度！
-}
+        try {
+            const response = await fetch(`${API_BASE_URL}/todos/${todoId}`, {
+                method: 'DELETE',
+            });
 
-//删除事项
-todoList.addEventListener('click', function (event) {
-    if (event.target.classList.contains('del')) {
-        const itemToDelete = event.target.closest('.item');
-        itemToDelete.remove();
-        updateProgress();
+            if (!response.ok) {
+                throw new Error('删除失败');
+            }
+
+            item.remove();
+            // fetchAndRenderTodos();  //重新加载整个列表，逻辑更简单，但会有一点延迟
+        } catch (error) {
+            console.error('删除任务时出错:', error);
+            alert('删除失败，请稍后再试。');
+        }
     }
 
-    if (event.target.type === 'checkbox') {
-        const itemToToggle = event.target.closest('.item');
-        itemToToggle.classList.toggle('completed');
-        //它会检查 itemToToggle 元素的 class 列表：
-        // 如果没有 'completed' 这个 class，它就加上。
-        // 如果已经有 'completed' 这个 class，它就去掉。
-        updateProgress();
+    if (target.type === 'checkbox') {
+        const item = target.closest('.item');
+        const todoId = item.dataset.id;
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/todos/${todoId}`, {
+                method: 'PATCH',
+            });
+            
+            if (!response.ok) {
+                throw new Error('更新状态失败');
+            }
+
+            item.classList.toggle('completed');
+        } catch (error) {
+            console.error('更新状态时出错:', error);
+            alert('更新失败，请稍后再试。');
+            // 如果更新失败，把 checkbox 的状态恢复原状，防止UI与数据不一致
+            target.checked = !target.checked;
+        }
     }
 });
