@@ -22,7 +22,7 @@ const renderTodos = (todos) => {
 
         const todoItemHTML =
             `
-            <div class="${itemClass}" data-id="${todo.id}">
+            <div class="${itemClass}" data-id="${todo._id}">
                 <div>
                     <input type="checkbox" ${checkedAttribute}> 
                     <span class="name">${todo.text}</span>
